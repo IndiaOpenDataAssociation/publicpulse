@@ -60,7 +60,7 @@ def webhook():
                     # the facebook ID of the person sending you the message
                     sender_id = messaging_event["sender"]["id"]
                     # the recipient's ID, which should be your page's facebook ID
-                    recipient_id = messaging_event["recipient"]["id"]
+                    # recipient_id = messaging_event["recipient"]["id"]
                     message_text = messaging_event["message"]  # the message's text
                     try:
                         row = model.survey.query.filter_by(sender_id=sender_id).first()
@@ -83,19 +83,20 @@ def webhook():
                             except Exception as error:
                                 log(error)
                         else:
-                            msg = json.dumps({"text": "I am very basic program who can ask some simple questions in order and can store the answer I get from you as an answer. Let's talk about you and let me understand your profile a little more.",
-                                              "quick_replies": [{
-                                                  "content_type": "text",
-                                                  "title": "Yes",
-                                                  "payload": "yes",
-                                              }]
-                                              })
+                            data = {
+                                "text": "I am very basic program who can ask some simple questions in order and can "
+                                        "store the answer I get from you as an answer. Let's talk about you and let "
+                                        "me understand your profile a little more.",
+                                "quick_replies": [{"content_type": "text", "title": "Yes", "payload": "yes", }]
+                            }
+                            msg = json.dumps()
                             # row_ques = (msg, 'Entry', 0)
                             post_profile(sender_id)
                             log(sender_id)
                             log(message_text["text"])
-                            survey_var = model.survey(
-                                sender_id=sender_id, entry=message_text["text"], last_question_answered="demog_permission")
+                            survey_var = model.survey(sender_id=sender_id,
+                                                      entry=message_text["text"],
+                                                      last_question_answered="demog_permission")
                             model.db.session.add(survey_var)
                             model.db.session.commit()
 
@@ -118,7 +119,7 @@ def webhook():
 
 def send_message(recipient_id, message_text):
 
-    #log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
+    # log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
 
     params = {
         "access_token": os.environ.get("fb_access_token")
