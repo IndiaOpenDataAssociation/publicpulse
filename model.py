@@ -1,5 +1,8 @@
-from settings import db
+# Third Party Stuff
 from sqlalchemy.dialects.postgresql import JSON
+
+# Public Pulse Stuff
+from settings import db
 
 
 class survey(db.Model):

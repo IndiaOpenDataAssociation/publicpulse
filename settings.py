@@ -1,6 +1,8 @@
+# Standard Library
 import os
 from os.path import dirname, join
 
+# Third Party Stuff
 from dotenv import load_dotenv
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy

@@ -1,14 +1,17 @@
+# Standard Library
 import json
 import os
 import sys
 from datetime import datetime
 
+# Third Party Stuff
 import requests
-
-import model
-import psycopg2
 from flask import render_template, request
+
+# Public Pulse Stuff
+import model
 from settings import app
+
 
 # Privacy Policy Route
 
@@ -162,8 +165,8 @@ def log(msg, *args, **kwargs):  # simple wrapper for logging to stdout on heroku
         if type(msg) is dict:
             msg = json.dumps(msg)
         else:
-            msg = unicode(msg).format(*args, **kwargs)
-        print u"{}: {}".format(datetime.now(), msg)
+            msg = str(msg).format(*args, **kwargs)
+        print("{}: {}".format(datetime.now(), msg))
     except UnicodeEncodeError:
         pass  # squash logging errors in case of non-ascii text
     sys.stdout.flush()
