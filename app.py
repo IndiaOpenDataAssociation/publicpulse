@@ -1,42 +1,32 @@
+import json
 import os
 import sys
-import json
 from datetime import datetime
-import psycopg2
+
 import requests
+
 import model
-
-from flask_sqlalchemy import SQLAlchemy
-
-from flask import Flask, request, render_template
-from datetime import datetime
-
-from os.path import join, dirname
-from dotenv import load_dotenv
-
-from flask_sqlalchemy import SQLAlchemy
-
-# load env
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("database")
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-
-db = SQLAlchemy(app)
+import psycopg2
+from flask import render_template, request
+from settings import app
 
 # Privacy Policy Route
+
+
 @app.route('/privacy-policy', methods=['GET'])
 def privacy_policy():
     return render_template('privacy-policy.html')
 
 # Term of Use Route
+
+
 @app.route('/term-of-use', methods=['GET'])
 def term_of_use():
     return render_template('term-of-use.html')
 
 # Index Route
+
+
 @app.route('/', methods=['GET'])
 def verify():
     # when the endpoint is registered as a webhook, it must echo back
@@ -57,7 +47,6 @@ def webhook():
     data = request.get_json()
     log(data)  # you may not want to log every incoming message in production, but it's good for testing
 
-
     if data["object"] == "page":
 
         for entry in data["entry"]:
@@ -65,18 +54,21 @@ def webhook():
 
                 if messaging_event.get("message"):  # someone sent us a message
 
-                    sender_id = messaging_event["sender"]["id"]        # the facebook ID of the person sending you the message
-                    recipient_id = messaging_event["recipient"]["id"]  # the recipient's ID, which should be your page's facebook ID
+                    # the facebook ID of the person sending you the message
+                    sender_id = messaging_event["sender"]["id"]
+                    # the recipient's ID, which should be your page's facebook ID
+                    recipient_id = messaging_event["recipient"]["id"]
                     message_text = messaging_event["message"]  # the message's text
                     try:
                         row = model.survey.query.filter_by(sender_id=sender_id).first()
                         log(row)
 
                         if row is not None:
-                            try: 
-                                question = model.question_new.query.filter_by(prev_field_name=row.last_question_answered).first()
+                            try:
+                                question = model.question_new.query.filter_by(
+                                    prev_field_name=row.last_question_answered).first()
                                 field_name = question.prev_field_name
-                                
+
                                 log(field_name)
                                 row.last_question_answered = question.next_field_name
                                 log("here")
@@ -88,23 +80,23 @@ def webhook():
                             except Exception as error:
                                 log(error)
                         else:
-                            msg = json.dumps({ "text" : "I am very basic program who can ask some simple questions in order and can store the answer I get from you as an answer. Let's talk about you and let me understand your profile a little more.",
-                                                    "quick_replies" : [{
-                                                    "content_type": "text",
-                                                    "title": "Yes",
-                                                    "payload": "yes",
-                                                        }]
-                                                    })
+                            msg = json.dumps({"text": "I am very basic program who can ask some simple questions in order and can store the answer I get from you as an answer. Let's talk about you and let me understand your profile a little more.",
+                                              "quick_replies": [{
+                                                  "content_type": "text",
+                                                  "title": "Yes",
+                                                  "payload": "yes",
+                                              }]
+                                              })
                             # row_ques = (msg, 'Entry', 0)
                             post_profile(sender_id)
                             log(sender_id)
                             log(message_text["text"])
-                            survey_var = model.survey(sender_id=sender_id, entry=message_text["text"], last_question_answered="demog_permission")
+                            survey_var = model.survey(
+                                sender_id=sender_id, entry=message_text["text"], last_question_answered="demog_permission")
                             model.db.session.add(survey_var)
                             model.db.session.commit()
 
                             send_message(sender_id, msg)
-                            
 
                     except Exception as error:
                         log("error")
@@ -142,6 +134,7 @@ def send_message(recipient_id, message_text):
         log(r.status_code)
         log(r.text)
 
+
 def message_content(message_text):
     # log(message_text)
     if 'attachments' not in message_text:
@@ -151,13 +144,15 @@ def message_content(message_text):
         lon = message_text["attachments"][0]["payload"]["coordinates"]["long"]
         message_content_text = str(lat) + " , " + str(lon)
 
-    return message_content_text 
+    return message_content_text
 
 
 def post_profile(sender_id):
     access_token = os.environ.get("fb_access_token")
-    r = requests.get("https://graph.facebook.com/v2.6/"+sender_id+"?fields=first_name,last_name,profile_pic&access_token="+access_token).json()
-    user_data = model.user_profile(sender_id=r["id"], first_name=r["first_name"], last_name=r["last_name"], profile_pic=r["profile_pic"])
+    r = requests.get("https://graph.facebook.com/v2.6/" + sender_id +
+                     "?fields=first_name,last_name,profile_pic&access_token=" + access_token).json()
+    user_data = model.user_profile(sender_id=r["id"], first_name=r["first_name"],
+                                   last_name=r["last_name"], profile_pic=r["profile_pic"])
     model.db.session.add(user_data)
     model.db.session.commit()
 
