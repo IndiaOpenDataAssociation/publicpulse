@@ -1,16 +1,17 @@
-python-dotenv==0.7.1
-psycopg2==2.7.3.2
+# Core
 Flask==0.11.1
-Jinja2==2.8
-MarkupSafe==0.23
-Werkzeug==0.11.10
-click==6.6
-gunicorn==19.6.0
-itsdangerous==0.24
+
+# Databases
+Flask-SQLAlchemy==2.3.2
+psycopg2==2.7.3.2
+
+# Networking
 requests==2.10.0
-flask-sqlalchemy
+
+# Configuration
+python-dotenv==0.7.1
 
 
 # Development
-flake8
-isort
+flake8==3.5.0
+isort==4.2.15
