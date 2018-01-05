@@ -4,7 +4,6 @@ uwsgi_workers: 4
 uwsgi_worker_connections: 5000
 uwsgi_conf_path: /etc/uwsgi-emperor/vassals
 
-project_service_dir: /etc/systemd/system/
 project_log_dir: /var/log/flask/{{ environment }}/{{ project_name}}
 uwsgi_socket: /tmp/{{ project_name }}.sock
 uwsgi_pid_file: /tmp/{{ project_name }}.pid

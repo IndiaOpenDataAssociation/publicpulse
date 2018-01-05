@@ -5,7 +5,6 @@ publicpulse.indiaopendata.com
 vm=0
 environment=prod
 user=ubuntu
-project_namespace={{ project_name }}-{{ environment }}
 project_path=/var/www/{{ project_name }}
 venv_path=/var/www/{{ project_name }}/venv
 use_letsencrypt=True

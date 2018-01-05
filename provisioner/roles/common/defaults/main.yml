@@ -35,4 +35,3 @@ base_ubuntu:
       - ca-certificates
       - uwsgi-emperor
       - uwsgi-plugin-python3
-

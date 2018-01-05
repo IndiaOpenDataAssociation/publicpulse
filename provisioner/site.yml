@@ -7,5 +7,5 @@
 
   roles:
     - common
-    - project_data
     - nginx
+    - project_data

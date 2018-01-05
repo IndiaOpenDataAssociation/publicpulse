@@ -18,7 +18,7 @@
   tags: ['configure']
 
 - name: ensure python virtualenv exist
-  command: virtualenv {{ venv_path }} -p python creates={{ venv_path }}
+  command: virtualenv {{ venv_path }} -p python3 creates={{ venv_path }}
   become: false
   tags: ['always']
 
@@ -41,17 +41,7 @@
   tags: ['configure', 'deploy']
   register: uwsgiconf
 
-- name: create project service
-  template: src=project.service.j2
-            dest={{ project_service_dir }}/{{ project_name }}.service
-  tags: ['configure']
-
-- name: start project service
-  service: name='{{ project_name }}.service' state=started
-  become: yes
-  tags: ['configure']
-
-- name: enable project service
-  service: name='{{ project_name }}.service' enabled=yes
-  become: yes
-  tags: ['configure']
+- name: reload uwsgi processes
+  command: uwsgi --reload {{ uwsgi_pid_file }}
+  become: true
+  tags: ['deploy']

@@ -1,5 +1,4 @@
 project_name: publicpulse
-project_repo_url: https://github.com/IndiaOpenDataAssociation/publicpulse/
+project_repo_url: https://github.com/IndiaOpenDataAssociation/publicpulse.git
 project_repo_remote: origin
 repo_version: master
-pg_gis: False
