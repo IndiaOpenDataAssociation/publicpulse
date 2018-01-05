@@ -1,0 +1,13 @@
+[Unit]
+Description=uWSGI instance to serve {{ project_name }}
+After=network.target
+
+[Service]
+User={{ user }}
+Group={{ uwsgi_group }}
+WorkingDirectory={{ project_path }}
+Environment="PATH={{ venv_path }}"
+ExecStart={{ venv_path }}/bin/uwsgi --ini {{ project_name }}.ini
+
+[Install]
+WantedBy=multi-user.target

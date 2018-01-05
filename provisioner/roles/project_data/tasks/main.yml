@@ -1,0 +1,57 @@
+---
+- name: make sure project directory is owned by {{ uwsgi_group }}
+  file: path={{ project_path }} state=directory owner={{ uwsgi_user }} group={{ uwsgi_group }} recurse=yes
+  tags: ['configure']
+
+- name: get the latest code
+  git: repo={{ project_repo_url }} dest={{ project_path }} version={{ repo_version }} accept_hostkey=true
+  become: false
+  register: gitresult
+  when: vm == 0
+  tags: ['always']
+
+- debug: msg="Git SHA-1 before={{ gitresult.before }} after={{ gitresult.after }}"
+  tags: ['always']
+
+- name: make sure log directory exists
+  file: path={{ project_log_dir }} state=directory owner={{uwsgi_user}} group={{uwsgi_group}} mode=751 recurse=yes
+  tags: ['configure']
+
+- name: ensure python virtualenv exist
+  command: virtualenv {{ venv_path }} -p python creates={{ venv_path }}
+  become: false
+  tags: ['always']
+
+- name: install project dependencies
+  pip: requirements={{ project_path }}/{{ requirements_file }} virtualenv={{ venv_path }}
+  become: false
+  tags: ['configure', 'deploy']
+
+- name: Make flask log readable
+  file:
+    path: /var/log/flask
+    mode: 0755
+    recurse: yes
+  tags: ['deploy']
+
+- name: copy uwsgi configuration
+  template: src=flask.uwsgi.ini.j2
+            dest={{ uwsgi_conf_path }}/{{project_name}}.ini
+            mode=644
+  tags: ['configure', 'deploy']
+  register: uwsgiconf
+
+- name: create project service
+  template: src=project.service.j2
+            dest={{ project_service_dir }}/{{ project_name }}.service
+  tags: ['configure']
+
+- name: start project service
+  service: name='{{ project_name }}.service' state=started
+  become: yes
+  tags: ['configure']
+
+- name: enable project service
+  service: name='{{ project_name }}.service' enabled=yes
+  become: yes
+  tags: ['configure']
