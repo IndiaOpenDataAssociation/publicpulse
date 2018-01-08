@@ -7,6 +7,8 @@ from datetime import datetime
 # Third Party Stuff
 import requests
 from flask import render_template, request
+import logging
+from logging.handlers import RotatingFileHandler
 
 # Public Pulse Stuff
 import model
@@ -60,7 +62,7 @@ def webhook():
                     # the facebook ID of the person sending you the message
                     sender_id = messaging_event["sender"]["id"]
                     # the recipient's ID, which should be your page's facebook ID
-                    # recipient_id = messaging_event["recipient"]["id"]
+                    recipient_id = messaging_event["recipient"]["id"]
                     message_text = messaging_event["message"]  # the message's text
                     try:
                         row = model.survey.query.filter_by(sender_id=sender_id).first()
@@ -74,7 +76,7 @@ def webhook():
 
                                 log(field_name)
                                 row.last_question_answered = question.next_field_name
-                                log("here")
+
                                 message_content_text = message_content(message_text)
                                 setattr(row, field_name, message_content_text)
                                 send_message(sender_id, json.dumps(question.question))
@@ -89,7 +91,7 @@ def webhook():
                                         "me understand your profile a little more.",
                                 "quick_replies": [{"content_type": "text", "title": "Yes", "payload": "yes", }]
                             }
-                            msg = json.dumps()
+                            msg = json.dumps(data)
                             # row_ques = (msg, 'Entry', 0)
                             post_profile(sender_id)
                             log(sender_id)
@@ -167,7 +169,7 @@ def log(msg, *args, **kwargs):  # simple wrapper for logging to stdout on heroku
             msg = json.dumps(msg)
         else:
             msg = str(msg).format(*args, **kwargs)
-        print("{}: {}".format(datetime.now(), msg))
+        app.logger.info(msg)
     except UnicodeEncodeError:
         pass  # squash logging errors in case of non-ascii text
     sys.stdout.flush()
@@ -175,4 +177,7 @@ def log(msg, *args, **kwargs):  # simple wrapper for logging to stdout on heroku
 
 if __name__ == '__main__':
     model.db.create_all()
+    handler = RotatingFileHandler('foo.log', maxBytes=10000, backupCount=1)
+    handler.setLevel(logging.INFO)
+    app.logger.addHandler(handler)
     app.run(debug=True)
