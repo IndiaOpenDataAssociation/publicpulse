@@ -2,11 +2,10 @@
 import json
 import os
 import sys
-from datetime import datetime
 
 # Third Party Stuff
 import requests
-from flask import render_template, request
+from flask import request, redirect
 import logging
 from logging.handlers import RotatingFileHandler
 
@@ -15,23 +14,7 @@ import model
 from settings import app
 
 
-# Privacy Policy Route
-
-
-@app.route('/privacy-policy', methods=['GET'])
-def privacy_policy():
-    return render_template('privacy-policy.html')
-
-# Term of Use Route
-
-
-@app.route('/term-of-use', methods=['GET'])
-def term_of_use():
-    return render_template('term-of-use.html')
-
 # Index Route
-
-
 @app.route('/', methods=['GET'])
 def verify():
     # when the endpoint is registered as a webhook, it must echo back
@@ -41,7 +24,8 @@ def verify():
             return "Verification token mismatch", 403
         return request.args["hub.challenge"], 200
 
-    return render_template('index.html'), 200
+    # if the request is not from bot redirect to landing page.
+    return redirect('https://www.publicpulse.online/')
 
 
 @app.route('/', methods=['POST'])
@@ -62,7 +46,7 @@ def webhook():
                     # the facebook ID of the person sending you the message
                     sender_id = messaging_event["sender"]["id"]
                     # the recipient's ID, which should be your page's facebook ID
-                    recipient_id = messaging_event["recipient"]["id"]
+                    # recipient_id = messaging_event["recipient"]["id"]
                     message_text = messaging_event["message"]  # the message's text
                     try:
                         row = model.survey.query.filter_by(sender_id=sender_id).first()
